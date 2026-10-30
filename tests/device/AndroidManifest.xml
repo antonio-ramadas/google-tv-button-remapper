@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.antonio.tvremap.tests">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="36" />
+    <instrumentation android:name="dev.antonio.tvremap.DeviceTests" android:targetPackage="dev.antonio.tvremap" />
+    <application android:label="Button Remapper tests" />
+</manifest>

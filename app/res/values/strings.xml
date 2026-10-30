@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Button Remapper</string>
+    <string name="service_description">Button Remapper reads remote button presses to run remaps you choose. It does not read screen content, record typing, or send data. Configure and reset remaps in the app.</string>
+    <string name="privacy_policy">Button Remapper processes remote button events locally to run remaps you choose. It does not collect or share data off your TV.\n\nAccessibility access filters key events while other apps are open. It does not read screen content, record typing, or keep a button-press history. Launchable app names and identifiers are used locally to let you choose a target.\n\nSaved remaps, chosen app identifiers, consent, and pause state remain in private storage on this TV until you remove them. Android backups are disabled. Reset Button Remapper clears this configuration and disables its accessibility service. Clearing app data or uninstalling also deletes the stored configuration.\n\nNo accounts, ads, analytics, or network permission. Apps opened by a remap have their own privacy practices.\n\nFor privacy questions, use the developer contact details on the app store listing.</string>
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#8CE5CE</item>
+        <item name="android:windowBackground">#101920</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

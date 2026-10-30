@@ -1,0 +1,22 @@
+Make your remote work your way with Button Remapper for Android TV and Google TV.
+
+Choose a remote button, choose an action, and save your remap. Open an installed app, open picture settings, or make a button do nothing. On compatible Android 8–12 TVs, you can also start your configured screensaver.
+
+MADE FOR YOUR REMOTE
+• Set up and edit remaps using your TV remote.
+• Choose from apps installed on your TV.
+• Give each button a name you recognize.
+• Pause all remaps without deleting them.
+• Remove individual remaps or reset everything from the app.
+• Remaps are saved locally across app and normal TV restarts.
+
+PRIVATE BY DESIGN
+No account, ads, analytics, or network permission. Configuration stays on your TV. Button Remapper does not read screen content, record typing, or keep a history of button presses.
+
+ACCESSIBILITY PERMISSION
+Button Remapper uses Android's AccessibilityService API to detect remote button events while you use other apps and run only the remaps you choose. You decide whether to enable access in TV settings. This permission is necessary for remapping; it does not give anyone remote access to your TV. You can disable it in settings or reset the app at any time.
+
+COMPATIBILITY
+Requires Android TV or Google TV running Android 8.0 or later. Some manufacturers reserve buttons or intercept them before Android can deliver them to this app. Not every button can be remapped. Home, Back, navigation, power, and voice-assistant buttons keep their original behavior.
+
+Available settings and screensaver actions depend on the TV. Screensaver launch is unavailable on Android 13 and later. Remaps pause while Button Remapper is open so you can navigate and edit safely. Another accessibility service that filters keys may conflict with remapping.
