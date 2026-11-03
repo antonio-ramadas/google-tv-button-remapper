@@ -6,6 +6,9 @@ Give your Android TV remote buttons a new job. Open an installed app, start the 
 
 This is a vibe-coded app.
 
+<!-- Replace PLAY_STORE_URL with the Google Play listing URL when available. -->
+<a href="PLAY_STORE_URL"><img src="docs/assets/google-play-badge.svg" alt="Get it on Google Play" width="239" height="71"></a>
+
 ![Button Remapper home screen with a saved remote-button remap](store/screenshots/en-US/01-home.png)
 
 ## Set up your first remap
