@@ -33,6 +33,8 @@ adb shell am instrument -w -e phase verify \
   dev.antonio.tvremap.tests/dev.antonio.tvremap.DeviceTests
 adb shell am instrument -w -e phase names \
   dev.antonio.tvremap.tests/dev.antonio.tvremap.DeviceTests
+adb shell am instrument -w -e phase disclosure \
+  dev.antonio.tvremap.tests/dev.antonio.tvremap.DeviceTests
 adb uninstall dev.antonio.tvremap.tests
 ```
 
@@ -48,6 +50,8 @@ Manual acceptance on each TV:
 - Check Back/Home/navigation, missing target apps, and another active key-filtering service.
 
 ## Persistence and device limitations
+
+Version 1.0.1 requires renewed consent to the two-button disclosure. Legacy consent does not enable remapping; saved remaps and pause state are preserved. Only activating **I agree & open settings** saves the new consent version, before opening Android settings. **No thanks**, Back, Home, and lifecycle events never save consent. The disclosure has no timer and initially focuses **No thanks**. The `disclosure` instrumentation phase uses isolated `test-disclosure` preferences and intercepts settings launches to check consent ordering without changing the user's permission or remaps.
 
 Mappings, consent, and pause state are saved synchronously in private, device-protected `SharedPreferences`. They survive app process death, normal TV restarts, and APK updates signed with the same key. Uninstalling or clearing app data removes them. Android retains the accessibility setting and binds the service again after reboot; no boot receiver, foreground-service notification, ADB connection, or open activity is required. Force-stop is different from a normal restart and may require reopening the app or re-enabling its accessibility service.
 
@@ -80,6 +84,22 @@ The Docker base image is pinned by digest. SDK command-line tools and bundletool
 The first image build downloads the tools and accepts the Android SDK licenses. Subsequent app builds run without network access. No SDK or JDK is installed on the host.
 
 ## Build an App Bundle
+
+If the TV's installed app has a different signing key, build a separate review app without uninstalling it:
+
+```sh
+docker run --rm --platform linux/amd64 --network none \
+  -v "$PWD:/workspace" tv-button-remapper-build bash scripts/build-review.sh
+adb install -r build/button-remapper-review.apk
+adb install -r build/button-remapper-review-tests.apk
+adb shell am instrument -w -e phase disclosure \
+  dev.antonio.tvremap.review.tests/dev.antonio.tvremap.review.DeviceTests
+adb shell am start -n dev.antonio.tvremap.review/.MainActivity
+```
+
+This changes only the generated review package identity; the displayed name remains **Button Remapper**. It has its own configuration and permission state. Installing it does not replace the original package or its remaps. Do not upload the review APK to Play.
+
+Validation on the connected TV for 1.0.1: 23 disclosure checks, 4 persistence seed checks, 68 persistence/key-stream checks, and 8 name/action checks passed. Docker compilation and the 3 mapping identity checks passed, and bundletool validated the unsigned Play bundle. The complete disclosure and both choices fit without scrolling at 1920 × 1080. Explicit acceptance also opened the actual TV accessibility settings. Testing used the separate review package because the installed app's signing key differs; an in-place signed upgrade and Google Play approval remain unverified.
 
 After building the Docker image, run:
 

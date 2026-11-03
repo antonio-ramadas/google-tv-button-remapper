@@ -1,9 +1,14 @@
 package dev.antonio.tvremap;
 
 import android.app.Instrumentation;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.os.ParcelFileDescriptor;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /** Framework instrumentation only. Uses isolated preferences, never the user's shortcuts. */
 public final class DeviceTests extends Instrumentation {
@@ -14,7 +19,9 @@ public final class DeviceTests extends Instrumentation {
         Bundle result = new Bundle();
         try {
             MappingStore store = new MappingStore(getTargetContext(), "test-remaps");
-            if (phase.equals("names")) {
+            if (phase.equals("disclosure")) {
+                testDisclosure();
+            } else if (phase.equals("names")) {
                 check(ButtonNames.forKey(KeyEvent.KEYCODE_MEDIA_PLAY).equals("Play"), "standard button label");
                 check(ButtonNames.format("KEYCODE_EXAMPLE_QUICK_MENU", "Example", "Generic").equals("Quick menu"), "runtime manufacturer prefix");
                 check(ButtonNames.format("KEYCODE_PRIMEVIDEO", "Example", "Generic").equals("Prime Video"), "readable app label");
@@ -50,7 +57,116 @@ public final class DeviceTests extends Instrumentation {
             result.putString("stream", "\nPASS " + phase + ": " + checks + " checks\n");
             finish(-1, result);
         } catch (Throwable error) {
-            result.putString("stream", "\nFAIL: " + error + "\n"); finish(0, result);
+            result.putString("stream", "\nFAIL after " + checks + " checks: " + android.util.Log.getStackTraceString(error) + "\n"); finish(0, result);
+        }
+    }
+
+    private void testDisclosure() throws Exception {
+        MappingStore fixture = new MappingStore(getTargetContext(), "test-disclosure");
+        check(fixture.reset(), "clean disclosure fixture");
+        check(fixture.save(new Mapping(183, 0, "Preserved", "none", "")), "seed saved remap");
+        check(fixture.setEnabled(false), "seed pause");
+        getTargetContext().createDeviceProtectedStorageContext()
+                .getSharedPreferences("test-disclosure", Context.MODE_PRIVATE)
+                .edit().putBoolean("consent", true).commit();
+        check(!fixture.consented(), "legacy one-button consent requires renewal");
+        check(fixture.all().size() == 1 && !fixture.enabled(), "upgrade preserves remaps and pause");
+
+        Intent launch = new Intent(getTargetContext(), MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        MainActivity activity = (MainActivity) startActivitySync(launch);
+        Field storeField = MainActivity.class.getDeclaredField("store");
+        storeField.setAccessible(true);
+        Field dialogField = MainActivity.class.getDeclaredField("disclosureDialog");
+        dialogField.setAccessible(true);
+        Method show = MainActivity.class.getDeclaredMethod("disclosure");
+        show.setAccessible(true);
+        runOnMainSync(() -> {
+            try {
+                AlertDialog initial = (AlertDialog) dialogField.get(activity);
+                if (initial != null) initial.dismiss();
+                storeField.set(activity, fixture);
+            } catch (ReflectiveOperationException error) { throw new AssertionError(error); }
+        });
+        final int[] settingsLaunches = {0};
+        ActivityMonitor monitor = new ActivityMonitor() {
+            @Override public ActivityResult onStartActivity(Intent intent) {
+                if (intent.getAction() != null && intent.getAction().startsWith("android.settings.")) {
+                    check(fixture.consented(), "consent saved before requesting settings");
+                    settingsLaunches[0]++;
+                    return new ActivityResult(0, null);
+                }
+                return null;
+            }
+        };
+        addMonitor(monitor);
+        try {
+            showDisclosure(activity, show);
+            AlertDialog dialog = (AlertDialog) dialogField.get(activity);
+            runOnMainSync(() -> {
+                check(dialog.getButton(AlertDialog.BUTTON_POSITIVE).isShown(), "agree button visible");
+                check(dialog.getButton(AlertDialog.BUTTON_NEGATIVE).isShown(), "decline button visible");
+                check(dialog.getButton(AlertDialog.BUTTON_NEGATIVE).hasFocus(), "decline focused by default");
+            });
+            sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER);
+            waitForIdleSync();
+            check(!fixture.consented() && settingsLaunches[0] == 0, "decline does not consent or open settings");
+            check(dialogField.get(activity) == null, "decline dismisses prompt");
+            showDisclosure(activity, show);
+            sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
+            waitForIdleSync();
+            check(dialogField.get(activity) == null, "Back dismisses prompt");
+            check(!fixture.consented() && settingsLaunches[0] == 0, "Back does not consent or open settings");
+            showDisclosure(activity, show);
+            shell("input keyevent KEYCODE_HOME");
+            waitForIdleSync();
+            check(!fixture.consented() && settingsLaunches[0] == 0, "Home does not consent or open settings");
+            shell("am start -W -f 0x20000000 -n " + getTargetContext().getPackageName() + "/.MainActivity");
+            waitForIdleSync();
+            check(!fixture.consented(), "return from Home does not consent");
+            showDisclosure(activity, show);
+            AlertDialog returned = (AlertDialog) dialogField.get(activity);
+            runOnMainSync(() -> {
+                check(returned.isShowing(), "disclosure still available after Home");
+                returned.getButton(AlertDialog.BUTTON_POSITIVE).requestFocus();
+            });
+            sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_CENTER);
+            waitForIdleSync();
+            check(fixture.consented() && settingsLaunches[0] == 1, "explicit agree opens settings once");
+            check(new MappingStore(getTargetContext(), "test-disclosure").consented(), "new consent persisted");
+            check(fixture.all().size() == 1 && !fixture.enabled(), "consent preserves remap and pause");
+        } finally {
+            removeMonitor(monitor);
+            runOnMainSync(activity::finish);
+            fixture.reset();
+        }
+    }
+
+    private void showDisclosure(MainActivity activity, Method show) {
+        runOnMainSync(() -> {
+            try { show.invoke(activity); }
+            catch (ReflectiveOperationException error) { throw new AssertionError(error); }
+        });
+        waitForIdleSync();
+        // Idle is not enough: the TV's window transition may still own input.
+        final boolean[] focused = {false};
+        for (int attempt = 0; attempt < 50 && !focused[0]; attempt++) {
+            runOnMainSync(() -> {
+                try {
+                    Field field = MainActivity.class.getDeclaredField("disclosureDialog");
+                    field.setAccessible(true);
+                    AlertDialog dialog = (AlertDialog) field.get(activity);
+                    focused[0] = dialog != null && dialog.getWindow().getDecorView().hasWindowFocus();
+                } catch (ReflectiveOperationException error) { throw new AssertionError(error); }
+            });
+            if (!focused[0]) android.os.SystemClock.sleep(100);
+        }
+        check(focused[0], "disclosure window ready for remote input");
+    }
+
+    private void shell(String command) throws java.io.IOException {
+        try (ParcelFileDescriptor descriptor = getUiAutomation().executeShellCommand(command);
+                java.io.InputStream input = new ParcelFileDescriptor.AutoCloseInputStream(descriptor)) {
+            while (input.read() != -1) { /* Wait for the shell command. */ }
         }
     }
 

@@ -40,6 +40,7 @@ public final class MainActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable unregisterBack;
     private AlertDialog captureDialog;
+    private AlertDialog disclosureDialog;
     private Mapping editing;
     private boolean connected;
     private boolean setupPromptShown;
@@ -265,12 +266,20 @@ public final class MainActivity extends Activity {
     }
 
     private void disclosure() {
-        new AlertDialog.Builder(this).setTitle("Allow remote button access?")
-            .setMessage("Button Remapper uses Android’s accessibility service to receive remote button presses, even while other apps are open, and run only the remaps you choose.\n\nIt does not read screen content, store a history of presses, or collect or share your data. Only your remap choices are saved on this TV.\n\nIn Accessibility settings, find Button Remapper under Services or Downloaded apps and turn it on. Then press Back to return here and add a button. You can disable access or reset the app at any time.")
-            .setPositiveButton("Agree & open settings", (d, w) -> {
+        if (disclosureDialog != null) return;
+        disclosureDialog = new AlertDialog.Builder(this).setTitle("Button Remapper: accessibility access")
+            .setMessage("Button Remapper uses Android’s AccessibilityService API to detect remote button presses while other apps are open and run only the remaps you choose.\n\nButton presses are processed on this TV. The app does not read screen content, keep a history of presses, or collect or share data off your TV. Your remaps and consent choice are saved locally.\n\nIf you agree, the next screen is Android Accessibility settings, where you can enable Button Remapper. You can disable access there at any time. If you decline, you can still manage saved remaps, but remapping needs consent and accessibility access.")
+            .setNegativeButton("No thanks", (d, w) -> {})
+            .setPositiveButton("I agree & open settings", (d, w) -> {
                 if (store.consent()) openAccessibilitySettings();
                 else Actions.message(this, "Could not save consent. Try again.");
-            }).show();
+            }).create();
+        // Only the affirmative on-screen button saves consent. Back, Home, outside
+        // touches and lifecycle changes never do; there is no timeout.
+        disclosureDialog.setOnDismissListener(d -> disclosureDialog = null);
+        disclosureDialog.setCanceledOnTouchOutside(false);
+        disclosureDialog.show();
+        disclosureDialog.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus();
     }
 
     private void startCapture() {

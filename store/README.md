@@ -40,7 +40,21 @@ docker run --rm --platform linux/amd64 --network none \
 
 Retake screenshots whenever the visible app changes. Capture stable screens after transitions; keep notifications and personal data out. Use TV screenshot fields, not phone fields. A promotional store video is optional; the Accessibility API review video is a separate remaining task.
 
-## Privacy policy
+## Accessibility disclosure resubmission (1.0.1 / version code 4)
+
+Upload a bundle signed with the existing Play upload key. `build/button-remapper-unsigned.aab` is unsigned. The new disclosure provides **I agree & open settings** and **No thanks**, defaults focus to decline, and saves consent only on explicit acceptance. Existing users are asked again without deleting their remaps.
+
+Record a fresh Accessibility API declaration video on the TV showing:
+
+1. Open the app and show the complete disclosure text and both buttons.
+2. Choose **No thanks** and show that the app remains usable without opening settings.
+3. Open **Remote button permission** again, press Back, then reopen it.
+4. Choose **I agree & open settings** and show the separate Android accessibility permission flow.
+5. Return, configure a remap, and demonstrate its action while another app is open. Include captions or narration if the remote press is not visible.
+
+Provide the new video link in the Play Console Accessibility API declaration for this submission. Keep the listing's accessibility explanation and `isAccessibilityTool=false`. Google makes the final review decision. See [Google's disclosure and video guidance](https://support.google.com/googleplay/android-developer/answer/11150561?hl=en).
+
+## Privacy policy hosting
 
 The [website privacy policy](../docs/privacy.html) needs the publisher and contact details filled in before hosting.
 

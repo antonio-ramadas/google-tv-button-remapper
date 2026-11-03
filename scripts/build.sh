@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd /workspace
+cd "$(dirname "$0")/.."
 SDK="${ANDROID_HOME}/platforms/android-36/android.jar"
 mkdir -p build .local
 rm -rf build/classes build/generated build/dex build/compiled.zip build/unsigned.apk build/aligned.apk

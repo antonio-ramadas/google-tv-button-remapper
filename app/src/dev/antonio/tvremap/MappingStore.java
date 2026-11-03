@@ -21,9 +21,11 @@ final class MappingStore {
     }
 
     boolean enabled() { return prefs.getBoolean("enabled", true); }
-    boolean consented() { return prefs.getBoolean("consent", false); }
+    // The old one-button disclosure is not sufficient consent for this version.
+    // Require the new choice without deleting saved remaps or the pause setting.
+    boolean consented() { return prefs.getInt("consent_version", 0) == 2; }
     boolean setEnabled(boolean value) { return prefs.edit().putBoolean("enabled", value).commit(); }
-    boolean consent() { return prefs.edit().putBoolean("consent", true).commit(); }
+    boolean consent() { return prefs.edit().remove("consent").putInt("consent_version", 2).commit(); }
     boolean reset() { return prefs.edit().clear().commit(); }
     boolean remove(Mapping mapping) { return prefs.edit().remove(mapping.id()).commit(); }
 

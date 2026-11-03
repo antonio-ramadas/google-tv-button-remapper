@@ -1,4 +1,3 @@
-First release of Button Remapper for Android TV and Google TV.
-• Remap supported remote buttons to installed apps and available TV actions.
-• Save remaps locally, pause them, or reset the app.
-• No accounts, ads, or network access.
+• Clear accessibility disclosure with explicit agree and decline choices.
+• Back and Home never grant consent or open permission settings.
+• Renewed consent is required after this update; your saved remaps are preserved.

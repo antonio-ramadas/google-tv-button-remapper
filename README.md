@@ -10,7 +10,7 @@ This is a vibe-coded app.
 
 ## Set up your first remap
 
-1. Open **Button Remapper** and select **Agree & open settings** after reading the permission prompt.
+1. Open **Button Remapper**, read the accessibility disclosure, and choose **I agree & open settings** or **No thanks**. Declining or pressing Back/Home does not grant consent. You can return to **Remote button permission** later.
 2. In your TV’s Accessibility settings, find **Button Remapper** under **Services** or **Downloaded apps** and enable it. The exact menu varies by TV.
 3. Return to the app, choose **Add a button**, and press the remote button you want to change.
 4. Choose an action, then select **Save remap button**. You can also give the button a name you recognize.
