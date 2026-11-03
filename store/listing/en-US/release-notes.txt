@@ -1,3 +1,3 @@
+• Button remaps now save automatically when you choose an action or app.
+• Name changes save when you select Done.
 • Clear accessibility disclosure with explicit agree and decline choices.
-• Back and Home never grant consent or open permission settings.
-• Renewed consent is required after this update; your saved remaps are preserved.

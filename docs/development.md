@@ -35,6 +35,10 @@ adb shell am instrument -w -e phase names \
   dev.antonio.tvremap.tests/dev.antonio.tvremap.DeviceTests
 adb shell am instrument -w -e phase disclosure \
   dev.antonio.tvremap.tests/dev.antonio.tvremap.DeviceTests
+adb shell am instrument -w -e phase autosave \
+  dev.antonio.tvremap.tests/dev.antonio.tvremap.DeviceTests
+adb shell am instrument -w -e phase autosave-verify \
+  dev.antonio.tvremap.tests/dev.antonio.tvremap.DeviceTests
 adb uninstall dev.antonio.tvremap.tests
 ```
 
@@ -46,10 +50,14 @@ Manual acceptance on each TV:
 - Hold the button: the selected app should open once.
 - Close/reopen the app and restart the TV; check remaps without opening Button Remapper first.
 - Pause/resume, remove one remap, cancel reset, then confirm reset and verify original behavior.
-- Verify that picture settings opens and that Back dismisses every dialog and discards unsaved edits.
+- Verify that picture settings opens and that Back cancels open choices and keeps changes already saved automatically.
 - Check Back/Home/navigation, missing target apps, and another active key-filtering service.
 
 ## Persistence and device limitations
+
+The editor saves each completed action/app choice immediately and saves a name when **Done** is selected. There is no separate Save button. Opening or canceling a picker does not change the stored remap; a new button without an action remains a draft. Back returns without undoing completed changes. If a save fails, the app offers Retry/Cancel instead of claiming success. The autosave instrumentation uses `test-autosave` preferences, actual framework UI clicks, and a separate process to check persistence. It also writes editor/help screenshots to the app's external files directory for documentation updates; this requires no storage permission. Framework UI inspection belongs only to the test harness and adds no screen-access capability to the app's service.
+
+Version 1.0.2 validation: Docker builds, mapping checks, and bundle validation passed. The TV passed 35 autosave UI checks, 3 autosave restart checks, and all 103 existing consent/persistence/key checks. Editor/help screenshots were refreshed from isolated test data. The test-only `screenshots` phase exports these PNGs as base64 in instrumentation output on TVs that block ADB reads of `Android/data`. After instrumentation, the already-enabled service was reconnected through TV settings and the live capture prompt opened. Synthetic ADB keys were intercepted or ignored by the TV; capture from a physical remote remains a manual check. The existing user remap was preserved.
 
 Version 1.0.1 requires renewed consent to the two-button disclosure. Legacy consent does not enable remapping; saved remaps and pause state are preserved. Only activating **I agree & open settings** saves the new consent version, before opening Android settings. **No thanks**, Back, Home, and lifecycle events never save consent. The disclosure has no timer and initially focuses **No thanks**. The `disclosure` instrumentation phase uses isolated `test-disclosure` preferences and intercepts settings launches to check consent ordering without changing the user's permission or remaps.
 
@@ -73,7 +81,7 @@ Some manufacturers intercept branded buttons before accessibility services; such
 
 The source does not contain TV model IDs, manufacturer-specific key-code tables, device addresses, or fixed installed-app choices. Setup tries Android's TV accessibility route, the standard accessibility action, and general settings. Settings paths and available actions depend on the device. Picture settings and screensaver actions are offered only when a suitable system activity is exposed. Screensaver support additionally requires the older Android behavior described above; resolving an activity cannot guarantee every vendor implementation works.
 
-Validation has been performed on one physical TV only. Other manufacturers, remotes, Android versions, settings layouts, and service restart behavior remain untested. Capability checks and graceful errors improve portability; they do not establish universal compatibility. The remote's Back button dismisses dialogs and leaves unsaved edits; Android 13+ uses `OnBackInvokedCallback` while older TVs handle remote Back key events. No deprecated Back callback is overridden.
+Validation has been performed on one physical TV only. Other manufacturers, remotes, Android versions, settings layouts, and service restart behavior remain untested. Capability checks and graceful errors improve portability; they do not establish universal compatibility. The remote's Back button dismisses dialogs and returns from the editor without undoing saved changes; Android 13+ uses `OnBackInvokedCallback` while older TVs handle remote Back key events. No deprecated Back callback is overridden.
 
 ## Toolchain
 

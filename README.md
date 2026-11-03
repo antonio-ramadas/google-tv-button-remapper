@@ -16,14 +16,14 @@ This is a vibe-coded app.
 1. Open **Button Remapper**, read the accessibility disclosure, and choose **I agree & open settings** or **No thanks**. Declining or pressing Back/Home does not grant consent. You can return to **Remote button permission** later.
 2. In your TV’s Accessibility settings, find **Button Remapper** under **Services** or **Downloaded apps** and enable it. The exact menu varies by TV.
 3. Return to the app, choose **Add a button**, and press the remote button you want to change.
-4. Choose an action, then select **Save remap button**. You can also give the button a name you recognize.
+4. Choose an action (and an app if needed). Your choice saves automatically. You can also rename the button; select **Done** to save its name.
 5. Press **Home** and try it. Remaps pause while Button Remapper is open so you can navigate and edit.
 
 | Choose an action | Edit your remap |
 | --- | --- |
-| ![Action picker showing app, screensaver, picture settings, and do nothing](store/screenshots/en-US/03-choose-action.png) | ![Remap editor with button name, action, save, and remove controls](store/screenshots/en-US/02-edit-remap.png) |
+| ![Action picker showing app, screensaver, picture settings, and do nothing](store/screenshots/en-US/03-choose-action.png) | ![Remap editor with button name, action, and remove controls](store/screenshots/en-US/02-edit-remap.png) |
 
-Select a saved remap to change or remove it. **Pause all remaps** keeps your choices for later. **Reset Button Remapper** deletes the app’s saved settings and disables its accessibility service; your TV settings and installed apps stay as they are. Press **Back** to close a dialog or leave an edit without saving.
+Select a saved remap to change or remove it. **Pause all remaps** keeps your choices for later. **Reset Button Remapper** deletes the app’s saved settings and disables its accessibility service; your TV settings and installed apps stay as they are. Changes save as you make them. Press **Back** to return, or to cancel an open choice without changing the saved remap.
 
 ## Compatibility and privacy
 

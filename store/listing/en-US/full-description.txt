@@ -1,6 +1,6 @@
 Make your remote work your way with Button Remapper for Android TV and Google TV.
 
-Choose a remote button, choose an action, and save your remap. Open an installed app, open picture settings, or make a button do nothing. On compatible Android 8–12 TVs, you can also start your configured screensaver.
+Choose a remote button and an action. Your remap saves automatically. Open an installed app, open picture settings, or make a button do nothing. On compatible Android 8–12 TVs, you can also start your configured screensaver.
 
 MADE FOR YOUR REMOTE
 • Set up and edit remaps using your TV remote.

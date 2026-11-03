@@ -40,7 +40,7 @@ docker run --rm --platform linux/amd64 --network none \
 
 Retake screenshots whenever the visible app changes. Capture stable screens after transitions; keep notifications and personal data out. Use TV screenshot fields, not phone fields. A promotional store video is optional; the Accessibility API review video is a separate remaining task.
 
-## Accessibility disclosure resubmission (1.0.1 / version code 4)
+## Accessibility disclosure resubmission (1.0.2 / version code 5)
 
 Upload a bundle signed with the existing Play upload key. `build/button-remapper-unsigned.aab` is unsigned. The new disclosure provides **I agree & open settings** and **No thanks**, defaults focus to decline, and saves consent only on explicit acceptance. Existing users are asked again without deleting their remaps.
 

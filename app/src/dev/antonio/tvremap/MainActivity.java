@@ -176,7 +176,7 @@ public final class MainActivity extends Activity {
         if (!store.all().isEmpty()) {
             pauseButton = sideButton("side:pause", "", () -> {
                 if (!store.setEnabled(!store.enabled())) Actions.message(this, "Could not save. Try again.");
-                // Update in place: retain focus, scroll position, and any unsaved edit.
+                // Update in place: retain focus, scroll position, and the current editor.
                 updateStatus();
             });
             rail.addView(pauseButton);
@@ -310,20 +310,29 @@ public final class MainActivity extends Activity {
         Button name = button("Button name: " + mapping.name + "  ›", () -> rename(mapping)); content.addView(name);
         Button choose = button(mapping.action.isEmpty() ? "Choose an action  ›" : Actions.label(mapping) + "  ›", () -> chooseAction(mapping));
         content.addView(choose); choose.requestFocus();
-        if (Actions.supported(mapping.action)) {
-            content.addView(button("Save remap button", () -> {
-                if (store.save(mapping)) { showHome(); Actions.message(this, "Remap saved. Press Home to try it."); }
-                else Actions.message(this, "Could not save. Try again.");
-            }));
-        }
         if (store.find(mapping.keyCode, mapping.scanCode) != null) content.addView(button("Remove this button remap", () -> new AlertDialog.Builder(this)
             .setTitle("Remove " + mapping.name + "?").setMessage("This button will return to its original behavior.")
             .setPositiveButton("Remove", (d, w) -> {
                 if (store.remove(mapping)) showHome(); else Actions.message(this, "Could not remove. Try again.");
             }).show()));
-        content.addView(text("Press Back to return without saving.", 13, MUTED));
+        content.addView(text(Actions.supported(mapping.action)
+                ? "Changes saved automatically. Press Back to return or Home to try it."
+                : "Choose an action to save this remap. Press Back to cancel.", 13, MUTED));
         restoreSidebarFocus(previousFocus);
         updateBackNavigation();
+    }
+
+    private void applyChange(Mapping mapping) {
+        // A new button has no remap until an action (and, for app launches, a
+        // target) has been chosen. Renaming an unfinished button stays a draft.
+        if (Actions.supported(mapping.action) && !store.save(mapping)) {
+            new AlertDialog.Builder(this).setTitle("Could not save change")
+                .setMessage("This change could not be saved. Try saving it again before leaving?")
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Retry", (d, w) -> applyChange(mapping)).show();
+            return;
+        }
+        showEditor(mapping);
     }
 
     private void rename(Mapping mapping) {
@@ -331,7 +340,7 @@ public final class MainActivity extends Activity {
         new AlertDialog.Builder(this).setTitle("Button name").setView(input)
             .setPositiveButton("Done", (d, w) -> {
                 String name = input.getText().toString().trim();
-                showEditor(new Mapping(mapping.keyCode, mapping.scanCode, name.isEmpty() ? mapping.name : name, mapping.action, mapping.target));
+                applyChange(new Mapping(mapping.keyCode, mapping.scanCode, name.isEmpty() ? mapping.name : name, mapping.action, mapping.target));
             }).show();
     }
 
@@ -347,7 +356,7 @@ public final class MainActivity extends Activity {
             .setItems(labels.toArray(new String[0]), (d, which) -> {
                 String action = ids.get(which);
                 if (action.equals("app")) chooseApp(mapping);
-                else showEditor(new Mapping(mapping.keyCode, mapping.scanCode, mapping.name, action, ""));
+                else applyChange(new Mapping(mapping.keyCode, mapping.scanCode, mapping.name, action, ""));
             }).show();
     }
 
@@ -367,13 +376,13 @@ public final class MainActivity extends Activity {
         if (labels.length == 0) { Actions.message(this, "No launchable apps found on this TV."); return; }
         new AlertDialog.Builder(this).setTitle("Open which app?").setItems(labels, (d, which) -> {
             String pkg = packages.get(which);
-            showEditor(new Mapping(mapping.keyCode, mapping.scanCode, mapping.name, "app", pkg + "|" + apps.get(pkg)));
+            applyChange(new Mapping(mapping.keyCode, mapping.scanCode, mapping.name, "app", pkg + "|" + apps.get(pkg)));
         }).show();
     }
 
     private void help() {
         new AlertDialog.Builder(this).setTitle("Help & Permissions")
-            .setMessage("Remote button permission lets Button Remapper detect button presses while you use other apps. It does not allow anyone to connect to your TV or read your screen.\n\nSome TVs reserve certain buttons. If a button cannot be detected, try another one or turn off other button-remapping apps.\n\nPress Back to close this screen or leave an edit without saving.")
+            .setMessage("Remote button permission lets Button Remapper detect button presses while you use other apps. It does not allow anyone to connect to your TV or read your screen.\n\nSome TVs reserve certain buttons. If a button cannot be detected, try another one or turn off other button-remapping apps.\n\nAction and app choices are saved automatically. Name changes are saved when you select Done. Press Back to close a dialog or return; canceling a choice keeps your previous remap.")
             .setNeutralButton("Privacy policy", (d, w) -> privacy())
             .setPositiveButton("Remote button permission", (d, w) -> disclosure()).show();
     }

@@ -19,7 +19,26 @@ public final class DeviceTests extends Instrumentation {
         Bundle result = new Bundle();
         try {
             MappingStore store = new MappingStore(getTargetContext(), "test-remaps");
-            if (phase.equals("disclosure")) {
+            if (phase.equals("screenshots")) {
+                StringBuilder images = new StringBuilder();
+                for (String name : new String[]{"autosave-editor.png", "autosave-help.png"}) {
+                    java.io.File file = new java.io.File(getTargetContext().getExternalFilesDir(null), name);
+                    images.append(name).append(':').append(android.util.Base64.encodeToString(
+                            java.nio.file.Files.readAllBytes(file.toPath()), android.util.Base64.NO_WRAP)).append('\n');
+                }
+                result.putString("stream", images.toString());
+                finish(-1, result);
+                return;
+            } else if (phase.equals("autosave")) {
+                checks += new AutosaveTests(this).run();
+            } else if (phase.equals("autosave-verify")) {
+                MappingStore saved = new MappingStore(getTargetContext(), "test-autosave");
+                Mapping mapping = saved.find(183, 123);
+                check(mapping != null && mapping.name.equals("Movie night") && mapping.action.equals("app")
+                        && !mapping.target.isEmpty(), "automatic changes survive process restart");
+                check(!saved.enabled(), "autosave preserves pause state");
+                check(saved.reset(), "clean autosave fixture");
+            } else if (phase.equals("disclosure")) {
                 testDisclosure();
             } else if (phase.equals("names")) {
                 check(ButtonNames.forKey(KeyEvent.KEYCODE_MEDIA_PLAY).equals("Play"), "standard button label");
